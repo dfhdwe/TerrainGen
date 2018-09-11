@@ -1,0 +1,159 @@
+int cols, rows;
+int scl = 20;
+int w = 4000;
+int h = 4000;
+
+float flyingy = 0, flyingx = 0, zrot = PI / 4, xrot = PI/4, tall = 0;
+
+float[][] terrain;
+
+void setup() {
+  size(600, 600, P3D);
+  cols = w / scl;
+  rows = h / scl;
+  terrain = new float[cols][rows];
+}
+
+
+void draw() {
+
+  if (wp) {
+    flyingy -= 0.1 * cos(zrot);
+    flyingx -= 0.1 * sin(zrot);
+  } else if (sp) {
+    flyingy += 0.1 * cos(zrot);
+    flyingx += 0.1 * sin(zrot);
+  }
+  if (dp) {
+    flyingy -= 0.1 * sin(zrot);
+    flyingx += 0.1 * cos(zrot);
+  } else if (ap) {
+    flyingy += 0.1 * sin(zrot);
+    flyingx -= 0.1 * cos(zrot);
+  }
+  if (spp)
+    tall -= 10;
+  else if (lsp)
+    tall += 10;
+
+  if (rp) 
+    zrot -= 0.1;
+  else if (lp)
+    zrot += 0.1;
+
+
+  float yoff = flyingy;
+  for (int y = 0; y < rows; y++) {
+    float xoff = flyingx;
+    for (int x = 0; x < cols; x++) {
+      terrain[x][y] = map(noise(xoff, yoff), 0, 1, -100, 100);
+      xoff += 0.1;
+    }
+    yoff += 0.1;
+  }
+
+  background(0);
+  stroke(255);
+  noStroke();
+  lights();
+
+  //pointLight(255, 255, 255, 0, 50, 0);
+
+  translate(width/2, height/2);
+  rotateX(PI/3);
+  rotateZ(zrot);
+  translate(-w/2, -h/2, tall);
+  for (int y = 0; y < rows - 1; y++) {
+    beginShape(TRIANGLE_STRIP);
+    float r, g, b;
+    for (int x = 0; x < cols; x++) {
+      if (terrain[x][y] > 20) {
+        r = map(terrain[x][y], -150, 150, 200, 255);
+        g = map(terrain[x][y], -150, 150, 200, 255);
+        b = map(terrain[x][y], -150, 150, 200, 255);
+      //} else if (terrain[x][y] < -30) {
+      //  r = 0;
+      //  g = 0;
+      //  b = map(terrain[x][y], -150, 150, 40, 150);
+      } else if (terrain[x][y] < -20) {
+        r = 0;
+        g = map(terrain[x][y], -150, 150, 40, 150);
+        b = 0;
+      } else {
+        r = map(terrain[x][y], -150, 150, 100, 150);
+        g = map(terrain[x][y], -150, 150, 60, 100);
+        b = 27;
+      }
+      fill(r, g, b);
+      //if (terrain[x][y] < -30) {
+      //  vertex(x*scl, y*scl, - 30);
+      //  vertex(x*scl, (y+1)*scl, - 30);
+      //} else {
+        vertex(x*scl, y*scl, terrain[x][y]);
+        vertex(x*scl, (y+1)*scl, terrain[x][y+1]);
+      //}
+    }
+    endShape();
+  }
+}
+
+boolean wp = false;
+boolean sp = false;
+boolean ap = false;
+boolean dp = false;
+boolean rp = false;
+boolean lp = false;
+boolean spp = false;
+boolean lsp = false;
+
+void keyPressed() {
+  if (key == 'w') {
+    wp = true;
+  } else if (key == 's') {
+    sp = true;
+  }
+  if (key == 'a') {
+    ap = true;
+  } else if (key == 'd') {
+    dp = true;
+  }
+  if (key == CODED) {
+    if (keyCode == RIGHT) {
+      rp = true;
+    } else if (keyCode == LEFT) {
+      lp = true;
+    }
+    if (keyCode == SHIFT) {
+      lsp = true;
+    }
+  }
+  if (key == ' ') {
+    spp = true;
+  }
+}
+
+void keyReleased() {
+  if (key == 'w') {
+    wp = false;
+  } else if (key == 's') {
+    sp = false;
+  }
+  if (key == 'a') {
+    ap = false;
+  } else if (key == 'd') {
+    dp = false;
+  }
+  if (key == CODED) {
+    if (keyCode == RIGHT) {
+      rp = false;
+    } else if (keyCode == LEFT) {
+      lp = false;
+    }
+    if (keyCode == SHIFT) {
+      lsp = false;
+    }
+  }
+  if (key == ' ') {
+    spp = false;
+  }
+}
